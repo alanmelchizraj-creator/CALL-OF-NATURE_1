@@ -1,0 +1,35 @@
+{
+  "name": "Call of Nature - Eco Adventure",
+  "short_name": "Call of Nature",
+  "description": "An immersive 2D environmental adventure game where you restore forests, clean oceans, and save wildlife.",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#10b981",
+  "orientation": "any",
+  "categories": ["games", "entertainment", "education"],
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Play Vanilla Edition",
+      "short_name": "Vanilla",
+      "description": "Launch pure HTML/JS edition",
+      "url": "/Vanilla_Call_of_Nature.html",
+      "icons": [{ "src": "/pwa-icon.svg", "sizes": "192x192" }]
+    }
+  ]
+}

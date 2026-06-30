@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Call of Nature - Eco Adventure PWA</title>
+    <!-- PWA Progressive Web App Manifest & Styling -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#10b981" />
+    <link rel="icon" type="image/svg+xml" href="/pwa-icon.svg" />
+    <link rel="apple-touch-icon" href="/pwa-icon.svg" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Eco Adventure" />
+    <meta name="description" content="Play offline! Restore forests, clean oceans, and save endangered wildlife." />
+    <script>
+      // Service Worker Registration for PWA Offline Capabilities
+      if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('[PWA] ServiceWorker registered successfully:', reg.scope))
+            .catch(err => console.warn('[PWA] ServiceWorker registration failed:', err));
+        });
+      }
+    </script>
+    <script>
+      // Chrome & Local File Offline Playback Handler
+      window.addEventListener('DOMContentLoaded', () => {
+        if (window.location.protocol === 'file:') {
+          // Check if we are running unbundled dev index.html (which has <script src="/src/main.tsx">)
+          const devScript = document.querySelector('script[src*="main.tsx"]');
+          if (devScript) {
+            // Attempt automatic instant navigation to the pre-compiled vanilla HTML/CSS/JS standalone game
+            try {
+              window.location.replace('Vanilla_Call_of_Nature.html');
+            } catch(e) {}
+
+            setTimeout(() => {
+              const rootEl = document.getElementById('root');
+              if (rootEl && rootEl.innerHTML.trim() === '') {
+                rootEl.innerHTML = `
+                  <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 660px; margin: 40px auto; padding: 40px 30px; border-radius: 24px; background: #0f172a; color: #f8fafc; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.85); border: 2px solid #334155;">
+                    <div style="font-size: 60px; margin-bottom: 12px;">🌿</div>
+                    <h1 style="color: #4ade80; margin: 0 0 12px 0; font-size: 28px; font-weight: 900; letter-spacing: -0.025em; text-transform: uppercase;">Call of Nature: Game Ready!</h1>
+                    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 20px 0; color: #cbd5e1;">
+                      You opened the development <code style="color:#fbbf24; background:#1e293b; padding:3px 8px; border-radius:6px;">index.html</code> entry point. To play instantly in Google Chrome without Node.js or terminal commands, launch our newly created **Vanilla HTML/CSS/JavaScript** standalone file below:
+                    </p>
+                    
+                    <div style="background: rgba(245, 158, 11, 0.15); border: 2px solid #f59e0b; padding: 16px; border-radius: 14px; margin-bottom: 24px; text-align: left; color: #fef3c7; font-size: 13.5px; line-height: 1.5;">
+                      ⚠️ <strong>OPENED INSIDE A ZIP FILE ON WINDOWS?</strong><br/>
+                      If clicking the buttons below says <em>File Not Found</em>, it means you opened this directly inside a downloaded <code>.zip</code> folder. Please close your browser, right-click the downloaded <code>.zip</code> file, select <strong>Extract All (Unzip)</strong>, open the extracted folder, and double-click <strong>Vanilla_Call_of_Nature.html</strong>!
+                    </div>
+
+                    <div style="background: #1e293b; padding: 24px; border-radius: 16px; margin-bottom: 20px; text-align: left; border: 1px solid #475569;">
+                      <p style="margin: 0 0 12px 0; font-weight: 900; color: #4ade80; font-size: 16px;">🎮 INSTANT ONE-CLICK LAUNCHERS:</p>
+                      
+                      <a href="Vanilla_Call_of_Nature.html" style="display: block; width: 100%; box-sizing: border-box; padding: 16px; background: #10b981; color: #064e3b; font-weight: 900; text-align: center; border-radius: 12px; text-decoration: none; font-size: 16px; letter-spacing: 0.5px; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(16,185,129,0.35);">🌿 LAUNCH Vanilla_Call_of_Nature.html (Pure HTML/JS)</a>
+                      
+                      <a href="Call_of_Nature_Chrome_Game.html" style="display: block; width: 100%; box-sizing: border-box; padding: 14px; background: #38bdf8; color: #082f49; font-weight: 900; text-align: center; border-radius: 12px; text-decoration: none; font-size: 15px; letter-spacing: 0.5px; margin-bottom: 12px;">⚡ LAUNCH Call_of_Nature_Chrome_Game.html (Full Edition)</a>
+
+                      <a href="Double_Click_To_Play_Offline.html" style="display: block; width: 100%; box-sizing: border-box; padding: 14px; background: #334155; color: #f8fafc; font-weight: 800; text-align: center; border-radius: 12px; text-decoration: none; font-size: 14px;">🎮 LAUNCH Double_Click_To_Play_Offline.html</a>
+                    </div>
+                  </div>
+                `;
+              }
+            }, 100);
+          }
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

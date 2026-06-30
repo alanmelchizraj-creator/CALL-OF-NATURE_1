@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Call of Nature - Eco Adventure PWA</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#10b981">
+  <link rel="icon" type="image/svg+xml" href="pwa-icon.svg">
+  <link rel="apple-touch-icon" href="pwa-icon.svg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script>
+    if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('[Vanilla PWA] SW registered:', reg.scope))
+          .catch(err => console.warn('[Vanilla PWA] SW failed:', err));
+      });
+    }
+  </script>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --bg-hover: #334155;
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.4);
+      --accent: #38bdf8;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #475569;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      cursor: pointer;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .stat-badge {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: #064e3b;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 900;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-hover);
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #082f49;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+    }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .view {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      padding: 3rem 1rem;
+      background: linear-gradient(180deg, rgba(30,41,59,0.5) 0%, rgba(15,23,42,0) 100%);
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #4ade80, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 700px;
+      margin: 0 auto 2rem auto;
+      line-height: 1.6;
+    }
+
+    /* Grid Layouts */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      transition: all 0.25s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px -10px rgba(0,0,0,0.5);
+    }
+
+    .card.locked {
+      opacity: 0.6;
+      filter: grayscale(0.8);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .card-icon {
+      font-size: 2.5rem;
+      background: rgba(15, 23, 42, 0.6);
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+    }
+
+    .stars {
+      color: var(--warning);
+      font-size: 1.25rem;
+      letter-spacing: 2px;
+    }
+
+    .card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Game Stage */
+    .game-container {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      min-height: 550px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas {
+      background: #0b1329;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+      cursor: crosshair;
+      max-width: 100%;
+    }
+
+    .game-hud {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 0.75rem 1.5rem;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+
+    /* Modal / Overlay */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-card);
+      border: 2px solid var(--primary);
+      border-radius: 24px;
+      padding: 3rem;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.9);
+      animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes scaleUp {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-emoji {
+      font-size: 5rem;
+      margin-bottom: 1rem;
+      animation: bounce 1s infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+
+    .modal h2 {
+      font-size: 2rem;
+      color: var(--text-main);
+      margin-bottom: 0.5rem;
+    }
+
+    .modal p {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    .advice-ticker {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--primary);
+      color: #34d399;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-top: 2rem;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Encyclopedia */
+    .encyclo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .encyclo-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .encyclo-card h4 {
+      color: var(--accent);
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo" onclick="showView('menu')">
+      <span>🌿</span> Call of Nature
+    </div>
+    <div class="stats-bar">
+      <div class="stat-badge" title="Total Nature Points">
+        <span>🌱</span> <span id="hud-points">0</span> NP
+      </div>
+      <div class="stat-badge" title="Total Stars Collected">
+        <span>⭐</span> <span id="hud-stars">0</span> / 18
+      </div>
+      <button class="btn btn-secondary" onclick="toggleAudio()" id="btn-audio">🔊 Audio On</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- MAIN MENU VIEW -->
+    <div id="view-menu" class="view active">
+      <div class="hero">
+        <h1>Save Wildlife. Restore Balance.</h1>
+        <p>Embark on 6 interactive environmental missions. Clean up polluted rivers, defend growing trees, extinguish wildfires, and restore natural biodiversity.</p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <button class="btn" onclick="showView('missions')">🎮 Play Adventure</button>
+          <button class="btn btn-accent" onclick="showView('encyclopedia')">📖 Wildlife Guide</button>
+          <button class="btn btn-secondary" onclick="resetGameData()">🔄 Reset Progress</button>
+        </div>
+      </div>
+
+      <h2 style="margin-bottom: 1rem; font-size: 1.75rem;">🌍 Featured Missions</h2>
+      <div class="grid" id="menu-missions-preview"></div>
+
+      <div class="advice-ticker">
+        <span>💡</span> <span id="advice-text">Loading daily environmental tip...</span>
+      </div>
+    </div>
+
+    <!-- MISSIONS SELECT VIEW -->
+    <div id="view-missions" class="view">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2>🗺️ World Exploration Missions</h2>
+        <button class="btn btn-secondary" onclick="showView('menu')">⬅ Back to Menu</button>
+      </div>
+      <div class="grid" id="missions-grid"></div>
+    </div>
+
+    <!-- ACTIVE GAME CANVAS VIEW -->
+    <div id="view-game" class="view">
+      <div class="game-hud">
+        <div>🎯 Mission: <span id="game-title" style="color:var(--primary)">Mission</span></div>
+        <div>⏱️ Time: <span id="game-timer" style="color:var(--accent)">60</span>s</div>
+        <div>🏆 Score: <span id="game-score" style="color:var(--warning)">0</span></div>
+        <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="exitGame()">Abort</button>
+      </div>
+      <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="500"></canvas>
+        <p id="game-instr" style="margin-top: 1rem; color: var(--text-muted);">Instructions</p>
+      </div>
+    </div>
+
+    <!-- ENCYCLOPEDIA VIEW -->
+    <div id="view-encyclopedia" class="view">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2>📖 Forest Wildlife Encyclopedia</h2>
+        <button class="btn btn-secondary" onclick="showView('menu')">⬅ Back to Menu</button>
+      </div>
+      <div class="encyclo-grid">
+        <div class="encyclo-card">
+          <h4>🦌 Forest Deer</h4>
+          <p style="color:var(--text-muted); line-height:1.5;">Gentle herbivores that disperse plant seeds throughout the forest floor. Essential for maintaining balanced forest vegetation.</p>
+          <div style="margin-top:1rem; padding:0.75rem; background:rgba(16,185,129,0.1); border-radius:8px; color:#34d399; font-size:0.85rem;"><strong>Tip:</strong> Protect wildlife corridors from road traffic and deforestation.</div>
+        </div>
+        <div class="encyclo-card">
+          <h4>🦊 Red Fox</h4>
+          <p style="color:var(--text-muted); line-height:1.5;">Clever omnivores that control rodent populations. They adapt quickly to varying habitats but suffer from plastic litter contamination.</p>
+          <div style="margin-top:1rem; padding:0.75rem; background:rgba(56,189,248,0.1); border-radius:8px; color:#38bdf8; font-size:0.85rem;"><strong>Tip:</strong> Never leave open tin cans or plastic rings in nature reserves.</div>
+        </div>
+        <div class="encyclo-card">
+          <h4>🦦 River Otter</h4>
+          <p style="color:var(--text-muted); line-height:1.5;">Playful aquatic mammals that act as key indicators of clean water health. Sensitive to chemical runoff and floating plastic debris.</p>
+          <div style="margin-top:1rem; padding:0.75rem; background:rgba(16,185,129,0.1); border-radius:8px; color:#34d399; font-size:0.85rem;"><strong>Tip:</strong> Support river cleanup drives and reduce household detergent runoff.</div>
+        </div>
+        <div class="encyclo-card">
+          <h4>🦉 Great Horned Owl</h4>
+          <p style="color:var(--text-muted); line-height:1.5;">Silent nocturnal apex predators that nest in old-growth hollow trees. Logging threatens their breeding sanctuaries.</p>
+          <div style="margin-top:1rem; padding:0.75rem; background:rgba(245,158,11,0.1); border-radius:8px; color:#fbf8cc; font-size:0.85rem;"><strong>Tip:</strong> Preserve dead standing trees (snags) for bird nesting habitats.</div>
+        </div>
+        <div class="encyclo-card">
+          <h4>🐻 Grizzly Bear</h4>
+          <p style="color:var(--text-muted); line-height:1.5;">Keystone guardians of the mountain wilderness. By enriching river banks with salmon nutrients, they feed surrounding ancient trees.</p>
+          <div style="margin-top:1rem; padding:0.75rem; background:rgba(56,189,248,0.1); border-radius:8px; color:#38bdf8; font-size:0.85rem;"><strong>Tip:</strong> Respect wilderness boundaries and store camping food securely.</div>
+        </div>
+        <div class="encyclo-card">
+          <h4>🐺 Timber Wolf</h4>
+          <p style="color:var(--text-muted); line-height:1.5;">Pack hunters that restore river ecosystems by regulating grazing herds. When wolves thrive, riverbanks stabilize and forests flourish.</p>
+          <div style="margin-top:1rem; padding:0.75rem; background:rgba(16,185,129,0.1); border-radius:8px; color:#34d399; font-size:0.85rem;"><strong>Tip:</strong> Advocate for wildlife conservation parks and endangered species laws.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- VICTORY / GAME OVER MODAL -->
+  <div class="overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-emoji" id="modal-icon">🌟</div>
+      <h2 id="modal-title">Mission Complete!</h2>
+      <p id="modal-desc">You restored environmental balance.</p>
+      <div style="display:flex; gap:1rem; justify-content:center;">
+        <button class="btn" onclick="closeModal(true)">🗺️ Continue Adventure</button>
+        <button class="btn btn-secondary" onclick="closeModal(false)">🔄 Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>🌿 Call of Nature - Standalone Vanilla HTML5 Edition. Built with zero external dependencies.</p>
+    <p style="margin-top:0.5rem; font-size:0.8rem; color:#64748b;">Runs 100% locally in your web browser. No Node.js, server, or internet connection required.</p>
+  </footer>
+
+  <script>
+    /* =================================================================
+       1. GAME STATE & LOCAL STORAGE
+       ================================================================= */
+    const STORAGE_KEY = "call_of_nature_vanilla_save";
+    let state = {
+      points: 0,
+      stars: {}, // { missionId: starCount }
+      highScores: {}, // { missionId: score }
+      unlocked: [1], // Unlocked mission IDs
+      audio: true
+    };
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) state = { ...state, ...JSON.parse(saved) };
+      } catch(e) {}
+      updateHUD();
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch(e) {}
+      updateHUD();
+    }
+
+    function resetGameData() {
+      if (confirm("Are you sure you want to reset all earned stars and points?")) {
+        state = { points: 0, stars: {}, highScores: {}, unlocked: [1], audio: true };
+        saveState();
+        renderMissions();
+      }
+    }
+
+    function updateHUD() {
+      document.getElementById("hud-points").textContent = state.points;
+      let totalStars = Object.values(state.stars).reduce((a, b) => a + b, 0);
+      document.getElementById("hud-stars").textContent = totalStars;
+      document.getElementById("btn-audio").textContent = state.audio ? "🔊 Audio On" : "🔇 Audio Off";
+    }
+
+    /* =================================================================
+       2. AUDIO SYNTHESIZER (WEB AUDIO API)
+       ================================================================= */
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx && state.audio) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function toggleAudio() {
+      state.audio = !state.audio;
+      saveState();
+      playSound(state.audio ? "collect" : "click");
+      if (state.audio) {
+        startMusicLoop(activeGame ? (activeGame.id === 6 ? "final" : "game") : "menu");
+      } else {
+        stopMusicLoop();
+      }
+    }
+
+    let currentLoopInterval = null;
+
+    function playSound(type) {
+      if (!state.audio) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      const now = audioCtx.currentTime;
+
+      if (type === "click") {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } else if (type === "jump" || type === "shoot") {
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      } else if (type === "collect" || type === "trash") {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+        osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      } else if (type === "win") {
+        const notes = [261.63, 329.63, 392.00, 523.25]; // C major arpeggio
+        notes.forEach((freq, idx) => {
+          const nOsc = audioCtx.createOscillator();
+          const nGain = audioCtx.createGain();
+          nOsc.connect(nGain);
+          nGain.connect(audioCtx.destination);
+          nOsc.type = "triangle";
+          nOsc.frequency.setValueAtTime(freq, now + idx * 0.1);
+          nGain.gain.setValueAtTime(0.15, now + idx * 0.1);
+          nGain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.1 + 0.4);
+          nOsc.start(now + idx * 0.1);
+          nOsc.stop(now + idx * 0.1 + 0.45);
+        });
+      } else if (type === "lose") {
+        const notes = [220.00, 207.65, 196.00]; // descending sadness
+        notes.forEach((freq, idx) => {
+          const nOsc = audioCtx.createOscillator();
+          const nGain = audioCtx.createGain();
+          nOsc.connect(nGain);
+          nGain.connect(audioCtx.destination);
+          nOsc.type = "sawtooth";
+          nOsc.frequency.setValueAtTime(freq, now + idx * 0.15);
+          nGain.gain.setValueAtTime(0.12, now + idx * 0.15);
+          nGain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.15 + 0.3);
+          nOsc.start(now + idx * 0.15);
+          nOsc.stop(now + idx * 0.15 + 0.32);
+        });
+      }
+    }
+
+    function startMusicLoop(type) {
+      stopMusicLoop();
+      if (!state.audio) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      let step = 0;
+      let tempo = type === "final" ? 140 : type === "game" ? 120 : 90;
+      let bpmDelay = 60 / tempo / 2;
+
+      const notesMenu = [261.63, 293.66, 329.63, 392.00, 440.00, 392.00, 329.63, 293.66];
+      const notesGame = [220.00, 246.94, 261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
+      const notesFinal = [196.00, 220.00, 233.08, 261.63, 293.66, 311.13, 392.00, 440.00];
+
+      const playBeat = () => {
+        if (!state.audio || !audioCtx) return;
+        try {
+          const now = audioCtx.currentTime;
+          let notes = type === "game" ? notesGame : type === "final" ? notesFinal : notesMenu;
+          let oscType = type === "game" ? "triangle" : type === "final" ? "sawtooth" : "sine";
+          let amp = type === "game" ? 0.04 : type === "final" ? 0.025 : 0.03;
+
+          if (step % 4 === 0) {
+            const bassOsc = audioCtx.createOscillator();
+            const bassGain = audioCtx.createGain();
+            bassOsc.connect(bassGain);
+            bassGain.connect(audioCtx.destination);
+            bassOsc.type = "sine";
+            bassOsc.frequency.setValueAtTime(notes[step % 4] / 4, now);
+            bassGain.gain.setValueAtTime(amp * 1.5, now);
+            bassGain.gain.exponentialRampToValueAtTime(0.001, now + bpmDelay * 3);
+            bassOsc.start(now);
+            bassOsc.stop(now + bpmDelay * 3);
+          }
+
+          const melOsc = audioCtx.createOscillator();
+          const melGain = audioCtx.createGain();
+          melOsc.connect(melGain);
+          melGain.connect(audioCtx.destination);
+          melOsc.type = oscType;
+          melOsc.frequency.setValueAtTime(notes[step % notes.length], now);
+          melGain.gain.setValueAtTime(amp, now);
+          melGain.gain.exponentialRampToValueAtTime(0.001, now + bpmDelay * 0.9);
+          melOsc.start(now);
+          melOsc.stop(now + bpmDelay * 0.9);
+
+          step++;
+        } catch(e){}
+      };
+
+      currentLoopInterval = setInterval(playBeat, bpmDelay * 1000);
+    }
+
+    function stopMusicLoop() {
+      if (currentLoopInterval) {
+        clearInterval(currentLoopInterval);
+        currentLoopInterval = null;
+      }
+    }
+
+    /* =================================================================
+       3. MISSIONS CONFIGURATION & UI RENDERER
+       ================================================================= */
+    const MISSIONS = [
+      { id: 1, title: "Forest Pathfinder", icon: "🦌", desc: "Guide the lost forest deer through fallen branches and obstacles to reach safe grazing grounds.", type: "runner", time: 30, targetScore: 100 },
+      { id: 2, title: "River Cleanup", icon: "🌊", desc: "Click floating plastic bottles, cans, and debris to purify the woodland stream for river otters.", type: "cleanup", time: 30, targetScore: 150 },
+      { id: 3, title: "Plant Protector", icon: "🌱", desc: "Defend fragile newly planted saplings by clicking away toxic smog clouds before they settle.", type: "protector", time: 30, targetScore: 200 },
+      { id: 4, title: "Wildfire Patrol", icon: "🔥", desc: "Aim your high-pressure water cannon to douse spreading brushfires and rescue trapped wildlife.", type: "firefighter", time: 30, targetScore: 250 },
+      { id: 5, title: "Habitat Harmony", icon: "🏞️", desc: "Click moving animals and guide them into their rightful natural biomes to balance the ecosystem.", type: "catch", time: 35, targetScore: 300 },
+      { id: 6, title: "Eco Guardian Challenge", icon: "👑", desc: "The ultimate environmental test! Rapidly douse fires and collect purified air points to win.", type: "final", time: 40, targetScore: 400 }
+    ];
+
+    const TIPS = [
+      "Composting organic kitchen scraps creates nutrient-dense natural soil fertilizer.",
+      "Switching to LED lightbulbs uses up to 80% less energy than incandescent bulbs.",
+      "Carrying a reusable water bottle prevents hundreds of single-use plastics from entering oceans.",
+      "Planting native wildflowers supports regional bees, butterflies, and hummingbird populations.",
+      "Fixing leaky household faucets saves thousands of gallons of clean freshwater every year."
+    ];
+
+    function showView(viewId) {
+      playSound("click");
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.getElementById("view-" + viewId).classList.add("active");
+      if (viewId === "missions" || viewId === "menu") {
+        renderMissions();
+        startMusicLoop("menu");
+      }
+    }
+
+    function renderMissions() {
+      const grid = document.getElementById("missions-grid");
+      const previewGrid = document.getElementById("menu-missions-preview");
+      if (grid) grid.innerHTML = "";
+      if (previewGrid) previewGrid.innerHTML = "";
+
+      // Random tip
+      document.getElementById("advice-text").textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+
+      MISSIONS.forEach(m => {
+        const isUnlocked = state.unlocked.includes(m.id);
+        const earnedStars = state.stars[m.id] || 0;
+        let starStr = earnedStars > 0 ? "⭐".repeat(earnedStars) : "☆☆☆";
+
+        const cardHtml = `
+          <div class="card ${isUnlocked ? '' : 'locked'}">
+            <div>
+              <div class="card-header">
+                <div class="card-icon">${m.icon}</div>
+                <div class="stars">${isUnlocked ? starStr : '🔒 Locked'}</div>
+              </div>
+              <h3>Mission ${m.id}: ${m.title}</h3>
+              <p>${m.desc}</p>
+            </div>
+            ${isUnlocked ? `<button class="btn" onclick="startMission(${m.id})">▶ Launch Mission</button>` : `<button class="btn btn-secondary" disabled>Complete Mission ${m.id - 1} First</button>`}
+          </div>
+        `;
+
+        if (grid) grid.innerHTML += cardHtml;
+        if (previewGrid && m.id <= 3) previewGrid.innerHTML += cardHtml;
+      });
+    }
+
+    /* =================================================================
+       4. GAME ENGINE (CANVAS MINI-GAMES)
+       ================================================================= */
+    let canvas, ctx;
+    let activeGame = null;
+    let gameTimer = null;
+    let animId = null;
+
+    function startMission(id) {
+      const m = MISSIONS.find(x => x.id === id);
+      if (!m) return;
+      activeGame = { ...m, currentScore: 0, timeLeft: m.time, entities: [], player: null };
+
+      document.getElementById("game-title").textContent = `Mission ${m.id}: ${m.title}`;
+      document.getElementById("game-timer").textContent = m.time;
+      document.getElementById("game-score").textContent = "0 / " + m.targetScore;
+      document.getElementById("game-instr").textContent = m.desc;
+
+      showView("game");
+      canvas = document.getElementById("gameCanvas");
+      ctx = canvas.getContext("2d");
+
+      setupMiniGame(activeGame);
+      startMusicLoop(m.id === 6 ? "final" : "game");
+
+      clearInterval(gameTimer);
+      gameTimer = setInterval(() => {
+        if (!activeGame) return;
+        activeGame.timeLeft--;
+        document.getElementById("game-timer").textContent = activeGame.timeLeft;
+        if (activeGame.timeLeft <= 0) {
+          endGame(activeGame.currentScore >= activeGame.targetScore);
+        }
+      }, 1000);
+
+      cancelAnimationFrame(animId);
+      gameLoop();
+    }
+
+    function exitGame() {
+      clearInterval(gameTimer);
+      cancelAnimationFrame(animId);
+      activeGame = null;
+      showView("missions");
+    }
+
+    function addScore(pts) {
+      if (!activeGame) return;
+      activeGame.currentScore += pts;
+      document.getElementById("game-score").textContent = `${activeGame.currentScore} / ${activeGame.targetScore}`;
+      if (activeGame.currentScore >= activeGame.targetScore && activeGame.timeLeft > 0) {
+        // Target reached!
+      }
+    }
+
+    /* Setup specific game types */
+    function setupMiniGame(g) {
+      canvas.onmousedown = null;
+      window.onkeydown = null;
+
+      if (g.type === "runner") {
+        g.player = { x: 100, y: 380, vy: 0, grounded: true };
+        window.onkeydown = (e) => {
+          if ((e.code === "Space" || e.code === "ArrowUp") && g.player && g.player.grounded) {
+            g.player.vy = -16;
+            g.player.grounded = false;
+            playSound("jump");
+          }
+        };
+        canvas.onmousedown = () => {
+          if (g.player && g.player.grounded) {
+            g.player.vy = -16;
+            g.player.grounded = false;
+            playSound("jump");
+          }
+        };
+      } else if (g.type === "cleanup" || g.type === "protector" || g.type === "firefighter" || g.type === "catch" || g.type === "final") {
+        canvas.onmousedown = (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const cx = (e.clientX - rect.left) * (canvas.width / rect.width);
+          const cy = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+          for (let i = g.entities.length - 1; i >= 0; i--) {
+            let item = g.entities[i];
+            let dist = Math.hypot(cx - item.x, cy - item.y);
+            if (dist < item.radius + 15) {
+              // Hit!
+              if (g.type === "firefighter" || g.type === "final") playSound("shoot");
+              else playSound("trash");
+
+              createParticles(item.x, item.y, item.color);
+              g.entities.splice(i, 1);
+              addScore(item.pts || 25);
+              break;
+            }
+          }
+        };
+      }
+    }
+
+    let particles = [];
+    function createParticles(x, y, color) {
+      for (let i = 0; i < 10; i++) {
+        particles.push({
+          x, y,
+          vx: (Math.random() - 0.5) * 8,
+          vy: (Math.random() - 0.5) * 8,
+          alpha: 1,
+          color: color || "#4ade80"
+        });
+      }
+    }
+
+    function gameLoop() {
+      if (!activeGame) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw background scenery
+      ctx.fillStyle = "#1e293b";
+      ctx.fillRect(0, 430, canvas.width, 70); // Ground/River
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(0, 430, canvas.width, 8); // Grass top
+
+      /* Type 1: Runner */
+      if (activeGame.type === "runner") {
+        let p = activeGame.player;
+        p.vy += 0.8; // Gravity
+        p.y += p.vy;
+        if (p.y > 380) { p.y = 380; p.vy = 0; p.grounded = true; }
+
+        // Spawn obstacles
+        if (Math.random() < 0.035) {
+          if (activeGame.entities.length === 0 || activeGame.entities[activeGame.entities.length - 1].x < canvas.width - 250) {
+            activeGame.entities.push({ x: canvas.width + 30, y: 395, w: 35, h: 35, emoji: Math.random() < 0.5 ? "🪵" : "🪨" });
+          }
+        }
+
+        // Spawn score stars
+        if (Math.random() < 0.04) {
+          activeGame.entities.push({ x: canvas.width + 30, y: Math.random() > 0.5 ? 260 : 330, radius: 18, emoji: "🌱", isStar: true });
+        }
+
+        // Update obstacles & stars
+        for (let i = activeGame.entities.length - 1; i >= 0; i--) {
+          let ob = activeGame.entities[i];
+          ob.x -= 7;
+
+          if (ob.isStar) {
+            ctx.font = "26px sans-serif";
+            ctx.fillText(ob.emoji, ob.x - 12, ob.y + 8);
+            if (Math.hypot(p.x - ob.x, p.y - ob.y) < 40) {
+              playSound("collect");
+              createParticles(ob.x, ob.y, "#34d399");
+              activeGame.entities.splice(i, 1);
+              addScore(20);
+            }
+          } else {
+            ctx.font = "32px sans-serif";
+            ctx.fillText(ob.emoji, ob.x - 15, ob.y + 25);
+            // Hit obstacle check
+            if (p.x > ob.x - 20 && p.x < ob.x + 20 && p.y > ob.y - 30) {
+              playSound("lose");
+              activeGame.currentScore = Math.max(0, activeGame.currentScore - 15);
+              document.getElementById("game-score").textContent = `${activeGame.currentScore} / ${activeGame.targetScore}`;
+              activeGame.entities.splice(i, 1);
+              ctx.fillStyle = "rgba(239, 68, 68, 0.4)";
+              ctx.fillRect(0,0,canvas.width,canvas.height);
+            }
+          }
+
+          if (ob.x < -40) activeGame.entities.splice(i, 1);
+        }
+
+        // Draw Player Deer facing forward (right)
+        ctx.save();
+        ctx.font = "46px sans-serif";
+        ctx.scale(-1, 1);
+        ctx.fillText("🦌", -p.x - 20, p.y + 35);
+        ctx.restore();
+      }
+
+      /* Type 2, 3, 4, 5, 6: Clicker / Spawner Targets */
+      else {
+        let spawnRate = activeGame.type === "final" ? 0.06 : 0.045;
+        if (Math.random() < spawnRate) {
+          let icons, color;
+          if (activeGame.type === "cleanup") { icons = ["🧃", "🍾", "🥫", "🛍️"]; color = "#38bdf8"; }
+          else if (activeGame.type === "protector") { icons = ["💨", "☁️", "☠️"]; color = "#94a3b8"; }
+          else if (activeGame.type === "firefighter") { icons = ["🔥", "💥", "🔥"]; color = "#ef4444"; }
+          else { icons = ["🦊", "🦦", "🦉", "🦌"]; color = "#fbbf24"; }
+
+          let itemEmoji = icons[Math.floor(Math.random() * icons.length)];
+          activeGame.entities.push({
+            x: Math.random() * (canvas.width - 120) + 60,
+            y: Math.random() * (canvas.height - 200) + 60,
+            radius: 26,
+            emoji: itemEmoji,
+            color: color,
+            vx: (Math.random() - 0.5) * 3,
+            vy: (Math.random() - 0.5) * 3,
+            life: 180
+          });
+        }
+
+        // Update & Draw targets
+        for (let i = activeGame.entities.length - 1; i >= 0; i--) {
+          let item = activeGame.entities[i];
+          item.x += item.vx;
+          item.y += item.vy;
+          item.life--;
+
+          if (item.x < 30 || item.x > canvas.width - 30) item.vx *= -1;
+          if (item.y < 30 || item.y > 400) item.vy *= -1;
+
+          ctx.beginPath();
+          ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2);
+          ctx.fillStyle = rgbaColor(item.color, 0.2);
+          ctx.fill();
+          ctx.strokeStyle = item.color;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          ctx.font = "32px sans-serif";
+          ctx.fillText(item.emoji, item.x - 16, item.y + 11);
+
+          if (item.life <= 0) activeGame.entities.splice(i, 1);
+        }
+      }
+
+      // Draw & Update Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        let pt = particles[i];
+        pt.x += pt.vx;
+        pt.y += pt.vy;
+        pt.alpha -= 0.04;
+
+        ctx.fillStyle = pt.color;
+        ctx.globalAlpha = Math.max(0, pt.alpha);
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        if (pt.alpha <= 0) particles.splice(i, 1);
+      }
+
+      animId = requestAnimationFrame(gameLoop);
+    }
+
+    function rgbaColor(hex, alpha) {
+      if (!hex || hex[0] !== '#') return 'rgba(255,255,255,0.2)';
+      let r = parseInt(hex.slice(1, 3), 16);
+      let g = parseInt(hex.slice(3, 5), 16);
+      let b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    /* =================================================================
+       5. GAME OVER & MODAL REWARDS
+       ================================================================= */
+    let modalSuccess = false;
+
+    function endGame(win) {
+      clearInterval(gameTimer);
+      cancelAnimationFrame(animId);
+      stopMusicLoop();
+
+      modalSuccess = win;
+      const overlay = document.getElementById("modal-overlay");
+      const icon = document.getElementById("modal-icon");
+      const title = document.getElementById("modal-title");
+      const desc = document.getElementById("modal-desc");
+
+      if (win) {
+        playSound("win");
+        icon.textContent = "🌟";
+        title.textContent = "Mission Complete!";
+        title.style.color = "#4ade80";
+
+        let earnedStars = activeGame.currentScore >= activeGame.targetScore * 1.5 ? 3 : (activeGame.currentScore >= activeGame.targetScore * 1.2 ? 2 : 1);
+        let pts = activeGame.currentScore;
+
+        desc.innerHTML = `You earned <strong>${earnedStars} Stars</strong> and <strong>+${pts} Nature Points</strong>!`;
+
+        state.points += pts;
+        state.stars[activeGame.id] = Math.max(state.stars[activeGame.id] || 0, earnedStars);
+        state.highScores[activeGame.id] = Math.max(state.highScores[activeGame.id] || 0, activeGame.currentScore);
+
+        // Unlock next mission
+        if (activeGame.id < 6 && !state.unlocked.includes(activeGame.id + 1)) {
+          state.unlocked.push(activeGame.id + 1);
+        }
+
+        saveState();
+      } else {
+        playSound("lose");
+        icon.textContent = "💥";
+        title.textContent = "Mission Failed";
+        title.style.color = "#ef4444";
+        desc.textContent = `You scored ${activeGame.currentScore} points, but needed ${activeGame.targetScore} to pass. Try again!`;
+      }
+
+      overlay.classList.add("active");
+    }
+
+    function closeModal(continueAdv) {
+      document.getElementById("modal-overlay").classList.remove("active");
+      if (continueAdv && modalSuccess && activeGame && activeGame.id < 6) {
+        startMission(activeGame.id + 1);
+      } else {
+        showView("missions");
+      }
+    }
+
+    /* INITIALIZE ON BOOT */
+    window.addEventListener("load", () => {
+      loadState();
+      renderMissions();
+      startMusicLoop("menu");
+    });
+  </script>
+</body>
+</html>

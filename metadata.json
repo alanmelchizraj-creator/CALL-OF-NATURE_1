@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Remix: Remix: Remix: Remix: Remix: CALL OF NATURE",
+  "description": "An immersive 2D environmental adventure game with ten interactive mini-games to restore the balance of the island of Evergreen.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
